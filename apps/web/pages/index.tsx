@@ -1,8 +1,12 @@
-import { Button } from "ui";
-import tw, { css } from "twin.macro";
+import { Button } from 'ui';
+import tw, { css } from 'twin.macro';
+
+export const divStyle = css`
+  ${tw`text-red-500`}
+`;
 
 export const buttonStyle = css`
-  ${tw`inline-flex items-center justify-center content-center flex-[0_0_auto]`}
+  ${tw`inline-flex items-center justify-center content-center`}
   ${tw`box-border cursor-pointer`}
   ${tw`bg-transparent text-inherit`}
   ${tw`border border-gray-400 border-solid rounded`}
@@ -31,14 +35,13 @@ export default function Web() {
   return (
     <div
       css={css({
-        backgroundColor: "yellow",
+        backgroundColor: 'yellow',
       })}
     >
       <h1 className="text-red-500">Web</h1>
-      <h2>test</h2>
+      <h2 css={[divStyle]}>test</h2>
       <div css={[buttonStyle]}>
-        제가 최근에 여행을 다녀왔는데 거기서 찍었던 사진을 가지고 몽환적인
-        이미지를 만들어봤습니다.
+        제가 최근에 여행을 다녀왔는데 거기서 찍었던 사진을 가지고 몽환적인 이미지를 만들어봤습니다.
       </div>
       <Button />
     </div>

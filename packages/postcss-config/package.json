@@ -1,0 +1,11 @@
+{
+  "name": "postcss-config",
+  "version": "0.0.0",
+  "private": true,
+  "files": [
+    "postcss.config.js"
+  ],
+  "devDependencies": {
+    "postcss": "^8.4.21"
+  }
+}

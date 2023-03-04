@@ -38,7 +38,7 @@ export default function Web() {
         backgroundColor: 'yellow',
       })}
     >
-      <h1 className="text-3xl text-blue-500">Docs</h1>
+      <h1 className="text-3xl text-blue-500">Server</h1>
       <h2 css={[divStyle]}>test</h2>
       <div css={[buttonStyle]}>
         제가 최근에 여행을 다녀왔는데 거기서 찍었던 사진을 가지고 몽환적인 이미지를 만들어봤습니다.
