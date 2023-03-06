@@ -24,4 +24,4 @@
 ```
 
 ## 참고
-- [] https://fe-developers.kakaoent.com/2022/220217-learn-babel-terser-swc/
+- [참고] https://fe-developers.kakaoent.com/2022/220217-learn-babel-terser-swc/

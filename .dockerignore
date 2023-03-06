@@ -1,0 +1,14 @@
+.vercel
+.next
+.env.local
+.env.production
+.env.dev
+.env.*
+
+dev.Dockerfile
+prod.Dockerfile
+Dockerfile
+README.md
+npm-debug.log
+
+**/node_modules
