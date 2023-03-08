@@ -1,24 +1,39 @@
-import Document, {
-  DocumentContext,
-  DocumentInitialProps,
-  Html,
-  Head,
-  Main,
-  NextScript,
-} from 'next/document';
+import Document, { Html, Head, Main, NextScript } from 'next/document';
+import React from 'react';
+import createEmotionServer from '@emotion/server/create-instance';
+import { cache } from '@emotion/css';
 
-class MyDocument extends Document {
-  static async getInitialProps(ctx: DocumentContext): Promise<DocumentInitialProps> {
+export const renderStatic = async (html: any) => {
+  if (html === undefined) {
+    throw new Error('did you forget to return html from renderToString?');
+  }
+  const { extractCritical } = createEmotionServer(cache);
+  const { ids, css } = extractCritical(html);
+
+  return { html, ids, css };
+};
+
+export default class AppDocument extends Document {
+  static async getInitialProps(ctx: any) {
+    const page = await ctx.renderPage();
+    const { css, ids } = await renderStatic(page.html);
     const initialProps = await Document.getInitialProps(ctx);
-
-    return initialProps;
+    return {
+      ...initialProps,
+      styles: (
+        <React.Fragment>
+          {initialProps.styles}
+          <style data-emotion={`css ${ids.join(' ')}`} dangerouslySetInnerHTML={{ __html: css }} />
+        </React.Fragment>
+      ),
+    };
   }
 
   render() {
     return (
-      <Html lang="en">
+      <Html>
         <Head />
-        <body className="bg-white dark:bg-black" data-js-focus-visible>
+        <body>
           <Main />
           <NextScript />
         </body>
@@ -26,5 +41,3 @@ class MyDocument extends Document {
     );
   }
 }
-
-export default MyDocument;

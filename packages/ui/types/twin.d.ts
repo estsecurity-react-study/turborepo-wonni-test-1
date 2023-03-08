@@ -1,16 +1,16 @@
-import "twin.macro";
-import { css as cssImport } from "@emotion/react";
-import styledImport from "@emotion/styled";
-import { CSSInterpolation } from "@emotion/serialize";
+import 'twin.macro';
+import { css as cssImport } from '@emotion/react';
+import styledImport from '@emotion/styled';
+import { CSSInterpolation } from '@emotion/serialize';
 
-// `twin.macro`에 다음 타입을 넣음
-declare module "twin.macro" {
+declare module 'twin.macro' {
+  // The styled and css imports
   const styled: typeof styledImport;
   const css: typeof cssImport;
 }
 
-// DOM의 attribute에 다음 타입을 넣음
-declare module "react" {
+declare module 'react' {
+  // The tw and css prop
   interface DOMAttributes<T> {
     tw?: string;
     css?: CSSInterpolation;
