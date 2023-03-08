@@ -1,5 +1,5 @@
-import Button from 'ui';
 import tw, { css } from 'twin.macro';
+import { Button } from 'ui';
 
 export const divStyle = css`
   ${tw`leading-none text-gray-900 align-middle text-body-13R`}
@@ -28,7 +28,8 @@ export default function Server() {
         제가 최근에 여행을 다녀왔는데 거기서 찍었던 사진을 가지고 몽환적인 이미지를 만들어봤습니다.
       </div>
       <div css={tw`flex mt-5`}>
-        <Button>Basic</Button>
+        <Button>Test2</Button>
+        <Button />
       </div>
     </div>
   );
