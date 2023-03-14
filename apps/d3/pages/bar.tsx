@@ -26,8 +26,7 @@ export default function D3() {
     { date: 'Jul 5 2017', count: 23 },
     { date: 'Jul 7 2017', count: 41 },
     { date: 'Jul 10 2017', count: 32 },
-    { date: 'Jul 15 2017', count: 13 },
-    { date: 'Jul 17 2017', count: 3 },
+    { date: 'Jul 15 2017', count: 14 },
   ];
 
   useEffect(() => {
@@ -48,14 +47,12 @@ export default function D3() {
     const svg = select(svgRef.current).attr('viewBox', [0, 0, width, height]);
 
     const xAxis = axisBottom(xScale) as any;
-
     svg
       .select('.x-axis')
       .attr('transform', `translate(0, ${height - margin.bottom})`)
       .call(xAxis);
 
     const yAxis = (axisLeft(yScale) as any).ticks(10);
-
     svg
       .select('.y-axis')
       .attr('transform', `translate(${margin.left}, 0)`)
@@ -65,16 +62,16 @@ export default function D3() {
           .selectAll('.tick line')
           .attr('stroke-opacity', 0.2)
           .attr('x2', width - margin.left - margin.right),
+      )
+      .call((g) =>
+        g
+          .append('text')
+          .attr('x', -margin.left)
+          .attr('y', 10)
+          .attr('fill', 'currentColor')
+          .attr('text-anchor', 'start')
+          .text(yLabel),
       );
-    // .call((g) =>
-    //   g
-    //     .append('text')
-    //     .attr('x', -margin.left)
-    //     .attr('y', 10)
-    //     .attr('fill', 'currentColor')
-    //     .attr('text-anchor', 'start')
-    //     .text(yLabel),
-    // );
 
     const rects = svg.selectAll('rect').data(campaign);
 
