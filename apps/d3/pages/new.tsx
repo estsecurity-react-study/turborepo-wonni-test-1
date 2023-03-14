@@ -30,7 +30,7 @@ export default function D3() {
   const campaign: campaignProps[] = [
     { date: 'May 5 2017', count: 19 },
     { date: 'May 7 2017', count: 26 },
-    { date: 'Jun 11 2017', count: 31 },
+    { date: 'Jun 11 2017', count: 9 },
     { date: 'Jun 25 2017', count: 36 },
     { date: 'Jul 2 2017', count: 17 },
     { date: 'Jul 5 2017', count: 23 },
@@ -79,7 +79,7 @@ export default function D3() {
       .call((g) =>
         g
           .selectAll('.tick line')
-          .attr('stroke-opacity', 0.2)
+          .attr('stroke-opacity', 0.1)
           .attr('x2', width - margin.left - (margin.left + margin.right)),
       )
       .call((g) =>
@@ -112,18 +112,21 @@ export default function D3() {
       .attr('width', xScale.bandwidth())
       .attr('height', (d) => height - (margin.top + margin.bottom) - yScale(d.count))
       .attr('y', (d) => yScale(d.count))
-      .attr('fill', 'orange');
-
-    // rects
-    //   .on('mouseenter', (event, value) => {
-    //     console.log(value);
-    //     svg
-    //       .selectAll('.tooltip')
-    //       .data([value])
-    //       .join((enter) => enter.append('text').attr('y', yScale(value.count) - 4))
-    //       .attr('class', 'tooltip');
-    //   })
-    //   .on('mouseleave', () => svg.select('.tooltip').remove());
+      .attr('fill', 'orange')
+      .on('mouseenter', (_, value) => {
+        container
+          .selectAll('.tooltip')
+          .data([value])
+          .join((enter) => enter.append('text').attr('y', yScale(value.count) - 4))
+          .attr('class', 'tooltip')
+          .text(value.count + '건')
+          .attr('x', (d) => (xScale(d.date) as any) + xScale.bandwidth() / 2 || null)
+          .attr('text-anchor', 'middle') // svg에서 텍스트 정렬
+          .transition()
+          .attr('y', yScale(value.count) - 10)
+          .attr('opacity', 1);
+      })
+      .on('mouseleave', () => container.select('.tooltip').remove());
   }, [campaign, size]);
 
   return (
