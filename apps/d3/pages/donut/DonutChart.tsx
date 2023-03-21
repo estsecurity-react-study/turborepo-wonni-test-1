@@ -95,15 +95,13 @@ const DonutChart = (props: IDonutChartProps) => {
           return (
             enter
               .append('path')
-              // .merge(slice as any)
               .attr('d', arcGenerator)
               // @ts-ignore
               .attr('fill', (d) => {
                 return scales.color(d.data.name);
               })
               .transition()
-              // .delay(1200)
-              // .duration(700)
+              .duration(400)
               .style('opacity', 0.5)
               .attrTween('d', function (d) {
                 const i = interpolate(d.startAngle, d.endAngle);
@@ -115,41 +113,50 @@ const DonutChart = (props: IDonutChartProps) => {
           );
         },
         (update) => {
-          return update.transition().attr('d', arcGenerator).style('opacity', 0.5);
-          // @ts-ignore
-          // .attr('fill', (d) => {
-          //   return scales.color(d.data.name);
-          // })
-          // .transition()
-          // .delay(800)
-          // .duration(700)
-          // .style('opacity', 0.7)
+          return update.transition().duration(400).attr('d', arcGenerator).style('opacity', 0.5);
         },
         (exit) => {
           return exit.remove();
         },
       );
 
-    // pieSvg
-    //   .selectAll('allSlices')
-    //   .data(pieData)
-    //   .enter()
-    //   .append('path')
-    //   .attr('d', arcGenerator)
-    //   // @ts-ignore
-    //   .attr('fill', (d) => {
-    //     return scales.color(d.data.name);
-    //   })
-    //   .transition()
-    //   .duration(700)
-    //   .style('opacity', 0.7)
-    //   .attrTween('d', function (d) {
-    //     const i = interpolate(d.startAngle, d.endAngle);
-    //     return function (t) {
-    //       d.endAngle = i(t);
-    //       return arcGenerator(d);
-    //     };
-    //   });
+    pieSvg
+      .selectAll('text')
+      .data(pieData)
+      .join(
+        (enter) => {
+          return enter
+            .append('text')
+            .attr('transform', function (d) {
+              return `translate(${arcGenerator.centroid(d)})`;
+            })
+            .attr('text-anchor', 'middle')
+            .attr('font-size', '14px')
+            .attr('fill', 'white')
+            .style('opacity', 0)
+            .transition()
+            .duration(700)
+            .style('opacity', 1)
+            .text((d) => {
+              return `${d.data.value}`;
+            }) as any;
+        },
+        (update) => {
+          return update
+            .transition()
+            .duration(400)
+            .attr('transform', function (d) {
+              return `translate(${arcGenerator.centroid(d)})`;
+            })
+            .style('opacity', 1)
+            .text((d) => {
+              return `${d.data.value}`;
+            }) as any;
+        },
+        (exit) => {
+          return exit.remove();
+        },
+      );
 
     // pieSvg
     //   .selectAll('legend')
@@ -178,7 +185,6 @@ const DonutChart = (props: IDonutChartProps) => {
     //   .attr('stroke', 'white')
     //   .attr('fill', 'transparent')
     //   .transition()
-    //   .duration(700)
     //   .attr('stroke-width', 10);
 
     // // Peripherals
