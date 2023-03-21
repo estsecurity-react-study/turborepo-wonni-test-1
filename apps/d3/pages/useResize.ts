@@ -11,6 +11,7 @@ export const useResize = (ref: RefObject<HTMLDivElement>) => {
       }
       const width = ref.current.offsetWidth;
       const height = ref.current.offsetHeight;
+
       setState({
         width,
         height,

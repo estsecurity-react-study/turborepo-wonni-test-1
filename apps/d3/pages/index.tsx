@@ -27,7 +27,7 @@ export default function D3() {
     { date: 'Jul 7 2017', count: 41 },
     { date: 'Jul 10 2017', count: 32 },
     { date: 'Jul 15 2017', count: 13 },
-    { date: 'Jul 17 2017', count: 3 },
+    { date: 'Jul 15 2017', count: 13 },
   ];
 
   useEffect(() => {
@@ -55,7 +55,6 @@ export default function D3() {
       .call(xAxis);
 
     const yAxis = (axisLeft(yScale) as any).ticks(10);
-
     svg
       .select('.y-axis')
       .attr('transform', `translate(${margin.left}, 0)`)
@@ -65,20 +64,20 @@ export default function D3() {
           .selectAll('.tick line')
           .attr('stroke-opacity', 0.2)
           .attr('x2', width - margin.left - margin.right),
+      )
+      .call((g) =>
+        g
+          .append('text')
+          .attr('x', -margin.left)
+          .attr('y', 10)
+          .attr('fill', 'currentColor')
+          .attr('text-anchor', 'start')
+          .text(yLabel),
       );
-    // .call((g) =>
-    //   g
-    //     .append('text')
-    //     .attr('x', -margin.left)
-    //     .attr('y', 10)
-    //     .attr('fill', 'currentColor')
-    //     .attr('text-anchor', 'start')
-    //     .text(yLabel),
-    // );
 
     const rects = svg.selectAll('rect').data(campaign);
 
-    rects.exit().transition().duration(400).attr('height', 0).attr('y', height).remove();
+    rects.exit().transition().attr('height', 0).attr('y', height).remove();
 
     rects
       .attr('x', (d) => xScale(d.date) || null)
@@ -113,7 +112,7 @@ export default function D3() {
           .attr('class', 'tooltip')
           .text(value.count + '건')
           .attr('x', (d) => (xScale(d.date) as any) + xScale.bandwidth() / 2 || null)
-          .attr('text-anchor', 'middle') // svg에서 텍스트 정렬
+          .attr('text-anchor', 'middle')
           .transition()
           .attr('y', yScale(value.count) - 10)
           .attr('opacity', 1);

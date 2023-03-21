@@ -1,16 +1,5 @@
-import tw, { css } from 'twin.macro';
 import { useEffect, useRef } from 'react';
-import {
-  axisBottom,
-  axisLeft,
-  scaleBand,
-  scaleLinear,
-  select,
-  max,
-  local,
-  pointer,
-  line,
-} from 'd3';
+import { axisBottom, axisLeft, scaleBand, scaleLinear, select, max, pointer } from 'd3';
 import { useResize } from './useResize';
 
 interface campaignProps {
@@ -34,7 +23,7 @@ export default function D3() {
     { date: 'Jun 25 2017', count: 36 },
     { date: 'Jul 2 2017', count: 17 },
     { date: 'Jul 5 2017', count: 23 },
-    { date: 'Jul 7 2017', count: 50 },
+    { date: 'Jul 7 2017', count: 51 },
     { date: 'Jul 10 2017', count: 32 },
     { date: 'Jul 15 2017', count: 13 },
     { date: 'Jul 17 2017', count: 3 },
@@ -46,10 +35,8 @@ export default function D3() {
     }
     const { width } = size;
 
-    // Selections
     const svg = select(svgRef.current).attr('viewBox', [0, 0, width, height]);
 
-    // clear all previous content on refresh
     const everything = svg.selectAll('*');
     everything.remove();
 
@@ -110,23 +97,32 @@ export default function D3() {
       .append('rect')
       .attr('x', (d) => xScale(d.date) || null)
       .attr('width', xScale.bandwidth())
+      .attr('height', 0)
+      .attr('y', height - (margin.top + margin.bottom))
+      .transition()
+      .delay(400)
+      .duration(300)
       .attr('height', (d) => height - (margin.top + margin.bottom) - yScale(d.count))
       .attr('y', (d) => yScale(d.count))
-      .attr('fill', 'orange')
-      .on('mouseenter', (_, value) => {
-        container
-          .selectAll('.tooltip')
-          .data([value])
-          .join((enter) => enter.append('text').attr('y', yScale(value.count) - 4))
-          .attr('class', 'tooltip')
-          .text(value.count + '건')
-          .attr('x', (d) => (xScale(d.date) as any) + xScale.bandwidth() / 2 || null)
-          .attr('text-anchor', 'middle') // svg에서 텍스트 정렬
-          .transition()
-          .attr('y', yScale(value.count) - 10)
-          .attr('opacity', 1);
-      })
-      .on('mouseleave', () => container.select('.tooltip').remove());
+      .attr('fill', 'orange');
+
+    rects.on('mouseenter', (event, value) => {
+      console.log(value);
+      // container
+      //   .selectAll('.tooltip')
+      //   .data([value])
+      //   .join((enter) => enter.append('text').attr('y', yScale(value.count) - 4))
+      //   .attr('class', 'tooltip')
+      //   .text(value.count + '건')
+      //   .attr('x', (d) => (xScale(d.date) as any) + xScale.bandwidth() / 2 || null)
+      //   .attr('text-anchor', 'middle') // svg에서 텍스트 정렬
+      //   .transition()
+      //   .attr('y', yScale(value.count) - 10)
+      //   .attr('opacity', 1);
+    });
+    // .on('mouseleave', () =>
+    //   container.select('.tooltip').transition().attr('y', 0).attr('opacity', 0).remove(),
+    // );
   }, [campaign, size]);
 
   return (
