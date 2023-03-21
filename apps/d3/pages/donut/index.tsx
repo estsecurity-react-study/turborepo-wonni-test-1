@@ -26,7 +26,7 @@ const campaign: Data[] = [
   { name: 'May 7 2017', value: 55 },
   { name: 'Jun 11 2017', value: 11 },
   { name: 'Jun 25 2017', value: 23 },
-  { name: 'Jul 2 2017', value: 14 },
+  { name: 'Jul 2 2017', value: 24 },
   { name: 'Jul 5 2017', value: 102 },
   { name: 'Jul 7 2017', value: 34 },
   { name: 'Jul 10 2017', value: 52 },

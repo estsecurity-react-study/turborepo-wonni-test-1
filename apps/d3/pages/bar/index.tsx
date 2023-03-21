@@ -117,22 +117,29 @@ export default function D3() {
       const rects = svg.selectAll('rect').data(campaign);
 
       rects.join(
-        (enter) => enterRects(enter) as any,
-        (update) =>
-          update
+        (enter) => {
+          console.log('enter');
+          return enterRects(enter) as any;
+        },
+        (update) => {
+          console.log('update');
+          return update
             .transition()
             .attr('x', (d) => xScale(d.date) || null)
             .attr('height', (d) => yScale(0) - yScale(d.count))
             .attr('y', (d) => yScale(d.count))
             .attr('width', xScale.bandwidth())
             .attr('fill', (_, i) => colorScale(String(i)))
-            .selection(),
-        (exit) =>
-          exit
+            .selection();
+        },
+        (exit) => {
+          console.log('exit');
+          return exit
             .transition()
             .attr('height', 0)
             .attr('y', height - margin.bottom)
-            .remove(),
+            .remove();
+        },
       );
     },
     [campaign],

@@ -8,23 +8,42 @@ interface IDonutChartProps {
   propertiesNames: string[];
 }
 
-const getScales = (data: Data[], width: number, height: number, metric: string[]) => {
-  return {
-    color: scaleOrdinal()
-      .domain(
-        extent(data, (d) => {
-          return d.name;
-        }) as unknown as string,
-      )
-      .range(schemeCategory10),
-  };
-};
-
 const DonutChart = (props: IDonutChartProps) => {
   const [loaded, setLoaded] = useState(false);
 
   const [prevHeight, setPrevHeight] = useState(props.dimensions.height);
   const [prevWidth, setPrevWidth] = useState(props.dimensions.width);
+
+  const getScales = useMemo(
+    () => (data: Data[], width: number, height: number, metric: string[]) => {
+      return {
+        color: scaleOrdinal()
+          .domain(
+            extent(data, (d) => {
+              return d.name;
+            }) as unknown as string,
+          )
+          .range(schemeCategory10),
+      };
+    },
+    [props.data.length],
+  );
+
+  const scales = useMemo(
+    () =>
+      getScales(
+        props.data,
+        props.dimensions.boundedWidth,
+        props.dimensions.boundedHeight,
+        props.propertiesNames,
+      ),
+    [
+      props.data,
+      props.dimensions.boundedWidth,
+      props.dimensions.boundedHeight,
+      props.propertiesNames,
+    ],
+  );
 
   const radius = useMemo(
     () =>
@@ -32,37 +51,34 @@ const DonutChart = (props: IDonutChartProps) => {
     [props.dimensions],
   );
 
+  const pieGenerator = useMemo(
+    () =>
+      pie<any>()
+        .value(({ value }) => value)
+        .sort(null),
+    [props.data],
+  );
+
   const memoizedDrawCallback = useCallback(() => {
+    // resize가 안 일어나면 여기 안들어옴
+    // 데이터만 바뀌는 경우 여기 안들어옴
     select('#chart-group').selectAll('*').remove();
   }, []);
 
   const memoizedUpdateCallback = useCallback(() => {
-    const scales = getScales(
-      props.data,
-      props.dimensions.boundedWidth,
-      props.dimensions.boundedHeight,
-      props.propertiesNames,
-    );
     const bounds = select('#bounds');
 
     const pieSvg = bounds
-      .select('#chart-group')
-      .append('svg')
       .attr('width', props.dimensions.width)
       .attr('height', props.dimensions.height)
-      .append('g')
       .attr('transform', `translate(${props.dimensions.width / 2},${props.dimensions.height / 2})`);
-
-    const pieGenerator = pie<any>()
-      .value(({ value }) => value)
-      .sort(null);
 
     const pieData = pieGenerator(props.data);
 
     const arcGenerator: any = arc()
       .cornerRadius(10)
       .padAngle(0.01)
-      .innerRadius(radius * 0.55)
+      .innerRadius(radius * 0.35)
       .outerRadius(radius * 0.75);
 
     const outerArcForLabelsPosition = arc()
@@ -72,105 +88,199 @@ const DonutChart = (props: IDonutChartProps) => {
     // Draw Chart
 
     pieSvg
-      .selectAll('allSlices')
+      .selectAll('path')
       .data(pieData)
-      .enter()
-      .append('path')
-      .attr('d', arcGenerator)
-      // @ts-ignore
-      .attr('fill', (d) => {
-        return scales.color(d.data.name);
-      })
+      .join(
+        (enter) => {
+          return (
+            enter
+              .append('path')
+              // .merge(slice as any)
+              .attr('d', arcGenerator)
+              // @ts-ignore
+              .attr('fill', (d) => {
+                return scales.color(d.data.name);
+              })
+              .transition()
+              // .delay(1200)
+              // .duration(700)
+              .style('opacity', 0.5)
+              .attrTween('d', function (d) {
+                const i = interpolate(d.startAngle, d.endAngle);
+                return function (t) {
+                  d.endAngle = i(t);
+                  return arcGenerator(d);
+                };
+              }) as any
+          );
+        },
+        (update) => {
+          return update.transition().attr('d', arcGenerator).style('opacity', 0.5);
+          // @ts-ignore
+          // .attr('fill', (d) => {
+          //   return scales.color(d.data.name);
+          // })
+          // .transition()
+          // .delay(800)
+          // .duration(700)
+          // .style('opacity', 0.7)
+        },
+        (exit) => {
+          return exit.remove();
+        },
+      );
 
-      .transition()
-      .duration(700)
-      .style('opacity', 0.7)
-      .attrTween('d', function (d) {
-        const i = interpolate(d.startAngle, d.endAngle);
-        return function (t) {
-          d.endAngle = i(t);
-          return arcGenerator(d);
-        };
-      });
+    // pieSvg
+    //   .selectAll('allSlices')
+    //   .data(pieData)
+    //   .enter()
+    //   .append('path')
+    //   .attr('d', arcGenerator)
+    //   // @ts-ignore
+    //   .attr('fill', (d) => {
+    //     return scales.color(d.data.name);
+    //   })
+    //   .transition()
+    //   .duration(700)
+    //   .style('opacity', 0.7)
+    //   .attrTween('d', function (d) {
+    //     const i = interpolate(d.startAngle, d.endAngle);
+    //     return function (t) {
+    //       d.endAngle = i(t);
+    //       return arcGenerator(d);
+    //     };
+    //   });
 
-    pieSvg
-      .append('circle')
-      .attr('cx', 0)
-      .attr('cy', 0)
-      .attr('r', radius * 0.55) // should be same as innerRadius value
-      .attr('stroke', 'white')
-      .attr('fill', 'transparent')
-      .transition()
-      .duration(700)
-      .attr('stroke-width', 10);
+    // pieSvg
+    //   .selectAll('legend')
+    //   .data(pieData)
+    //   .enter()
+    //   .append('text')
+    //   .attr('transform', function (d) {
+    //     return `translate(${arcGenerator.centroid(d)})`;
+    //   })
+    //   .attr('text-anchor', 'middle')
+    //   .attr('font-size', '14px')
+    //   .attr('fill', 'white')
+    //   .style('opacity', 0)
+    //   .transition()
+    //   .duration(700)
+    //   .style('opacity', 1)
+    //   .text((d) => {
+    //     return `${d.data.value}`;
+    //   });
 
-    // Peripherals
+    // pieSvg
+    //   .append('circle')
+    //   .attr('cx', 0)
+    //   .attr('cy', 0)
+    //   .attr('r', radius * 0.35)
+    //   .attr('stroke', 'white')
+    //   .attr('fill', 'transparent')
+    //   .transition()
+    //   .duration(700)
+    //   .attr('stroke-width', 10);
 
-    pieSvg
-      .selectAll('allPolylines')
-      .data(pieData)
-      .enter()
-      .append('polyline')
-      .attr('fill', 'none')
-      .transition()
-      .duration(700)
-      // @ts-ignore
-      .attr('stroke', (d) => {
-        return scales.color(d.data.name);
-      })
-      .attr('stroke-width', 1)
-      // @ts-ignore
-      .attr('points', (d) => {
-        // @ts-ignore
-        const posA = arcGenerator.centroid(d);
-        // @ts-ignore
-        const posB = outerArcForLabelsPosition.centroid(d);
-        // @ts-ignore
-        const posC = outerArcForLabelsPosition.centroid(d);
-        const midangle = d.startAngle + (d.endAngle - d.startAngle) / 2;
-        posC[0] = radius * 0.95 * (midangle < Math.PI ? 1 : -1);
-        return [posA, posB, posC];
-      });
+    // // Peripherals
 
-    pieSvg
-      .selectAll('allLabels')
-      .data(pieData)
-      .enter()
-      .append('text')
-      // @ts-ignore
-      .text((d) => {
-        return `${d.data.name} (${d.data.value})`;
-      })
-      .attr('transform', (d) => {
-        // @ts-ignore
-        const pos = outerArcForLabelsPosition.centroid(d);
-        const midAngle = d.startAngle + (d.endAngle - d.startAngle) / 2;
-        pos[0] = radius * 0.99 * (midAngle < Math.PI ? 1 : -1);
-        return `translate(${pos})`;
-      })
-      .attr('text-anchor', (d) => {
-        const midAngle = d.startAngle + (d.endAngle - d.startAngle) / 2;
-        return midAngle < Math.PI ? 'start' : 'end';
-      })
-      // @ts-ignore
-      .attr('fill', (d) => {
-        return scales.color(d.data.name);
-      });
+    // pieSvg
+    //   .selectAll('allPolylines')
+    //   .data(pieData)
+    //   .enter()
+    //   .append('polyline')
+    //   .attr('fill', 'none')
+    //   .transition()
+    //   .duration(700)
+    //   // @ts-ignore
+    //   .attr('stroke', (d) => {
+    //     return scales.color(d.data.name);
+    //   })
+    //   .attr('stroke-width', 1)
+    //   // @ts-ignore
+    //   .attr('points', (d) => {
+    //     // @ts-ignore
+    //     const posA = arcGenerator.centroid(d);
+    //     // @ts-ignore
+    //     const posB = outerArcForLabelsPosition.centroid(d);
+    //     // @ts-ignore
+    //     const posC = outerArcForLabelsPosition.centroid(d);
+    //     const midangle = d.startAngle + (d.endAngle - d.startAngle) / 2;
+    //     posC[0] = radius * 0.95 * (midangle < Math.PI ? 1 : -1);
+    //     return [posA, posB, posC];
+    //   });
+
+    // pieSvg
+    //   .selectAll('allLabels')
+    //   .data(pieData)
+    //   .enter()
+    //   .append('text')
+    //   // @ts-ignore
+    //   .text((d) => {
+    //     return `${d.data.name}`;
+    //   })
+    //   .attr('transform', (d) => {
+    //     // @ts-ignore
+    //     const pos = outerArcForLabelsPosition.centroid(d);
+    //     const midAngle = d.startAngle + (d.endAngle - d.startAngle) / 2;
+    //     pos[0] = radius * 0.99 * (midAngle < Math.PI ? 1 : -1);
+    //     return `translate(${pos})`;
+    //   })
+    //   .attr('text-anchor', (d) => {
+    //     const midAngle = d.startAngle + (d.endAngle - d.startAngle) / 2;
+    //     return midAngle < Math.PI ? 'start' : 'end';
+    //   })
+    //   // @ts-ignore
+    //   .attr('fill', (d) => {
+    //     return scales.color(d.data.name);
+    //   });
   }, [props.data, props.dimensions, props.propertiesNames]);
 
+  // useEffect(() => {
+  //   // 데이터만 바뀌는 경우 true
+  //   console.log('===============', loaded, '================');
+  //   if (!loaded) {
+  //     setLoaded(true);
+  //     memoizedDrawCallback();
+  //   } else {
+  //     memoizedUpdateCallback();
+  //   }
+  // }, [loaded, memoizedDrawCallback, memoizedUpdateCallback]);
+
+  // useEffect(() => {
+  //   const isNewHeight = prevHeight !== props.dimensions.height;
+  //   const isNewWidth = prevWidth !== props.dimensions.width;
+  //   if (isNewHeight || isNewWidth) {
+  //     setPrevWidth(props.dimensions.height);
+  //     setPrevHeight(props.dimensions.width);
+  //     memoizedDrawCallback();
+  //     memoizedUpdateCallback();
+  //   }
+  // }, [
+  //   memoizedDrawCallback,
+  //   memoizedUpdateCallback,
+  //   prevHeight,
+  //   prevWidth,
+  //   props.dimensions.height,
+  //   props.dimensions.width,
+  // ]);
+
   useEffect(() => {
+    // 데이터만 바뀌는 경우 true
     if (!loaded) {
       setLoaded(true);
+      console.log('여기');
       memoizedDrawCallback();
     } else {
+      console.log('저기');
       memoizedUpdateCallback();
     }
   }, [loaded, memoizedDrawCallback, memoizedUpdateCallback]);
 
   useEffect(() => {
-    const isNewHeight = prevHeight !== props.dimensions.height;
     const isNewWidth = prevWidth !== props.dimensions.width;
+    const isNewHeight = prevHeight !== props.dimensions.height;
     if (isNewHeight || isNewWidth) {
+      // 리사이트 일 때
       setPrevWidth(props.dimensions.height);
       setPrevHeight(props.dimensions.width);
       memoizedDrawCallback();
@@ -179,10 +289,10 @@ const DonutChart = (props: IDonutChartProps) => {
   }, [
     memoizedDrawCallback,
     memoizedUpdateCallback,
-    prevHeight,
-    prevWidth,
-    props.dimensions.height,
     props.dimensions.width,
+    props.dimensions.height,
+    prevHeight,
+    prevHeight,
   ]);
 
   return (
@@ -191,16 +301,13 @@ const DonutChart = (props: IDonutChartProps) => {
         id="wrapper"
         width={props.dimensions.width}
         height={props.dimensions.height}
-        style={{ overflow: 'visible', background: 'black' }}
+        style={{
+          overflow: 'visible',
+          background: 'black',
+          transform: `translate(${props.dimensions.margin.left}px, ${props.dimensions.margin.top}px)`,
+        }}
       >
-        <g
-          id="bounds"
-          style={{
-            transform: `translate(${props.dimensions.margin.left}px, ${props.dimensions.margin.top}px)`,
-          }}
-        >
-          <g id="chart-group" />
-        </g>
+        <g id="bounds"></g>
       </svg>
     </div>
   );
