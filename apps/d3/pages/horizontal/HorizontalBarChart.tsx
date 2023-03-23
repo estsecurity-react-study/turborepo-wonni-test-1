@@ -69,6 +69,47 @@ const HorizontalBarChart = (props: IDonutChartProps) => {
   //     .selection();
   // };
 
+  const wrap = (text: any) => {
+    text.each(function (_: any, i: number, n: any) {
+      var text = select(n[i]);
+      var words = text.text().split(/\s+/).reverse();
+      var lineHeight = 16;
+      var width = parseFloat(text.attr('width'));
+      var y = parseFloat(text.attr('y'));
+      var x = text.attr('x');
+      var anchor = text.attr('text-anchor');
+
+      var tspan = text
+        .text(null)
+        .append('tspan')
+        .attr('x', x)
+        .attr('y', y)
+        .attr('text-anchor', anchor);
+      var lineNumber = 0;
+      var line: string[] = [];
+      var word = words.pop();
+
+      while (word) {
+        line.push(word);
+        tspan.text(line.join(' '));
+        // @ts-ignore
+        if (tspan.node().getComputedTextLength() > width) {
+          lineNumber += 1;
+          line.pop();
+          tspan.text(line.join(' '));
+          line = [word];
+          tspan = text
+            .append('tspan')
+            .attr('x', x)
+            .attr('y', y + lineNumber * lineHeight)
+            .attr('anchor', anchor)
+            .text(word);
+        }
+        word = words.pop();
+      }
+    });
+  };
+
   const memoizedUpdateCallback = useCallback(() => {
     const bar = select('#wrapper');
 
@@ -101,18 +142,15 @@ const HorizontalBarChart = (props: IDonutChartProps) => {
       .select('.x-axis')
       .attr('transform', `translate(0, ${height - marginBottom})`)
       .transition()
-      .call(xAxis);
-
-    barSvg
-      .select('.x-axis')
       .call(xAxis)
-      .transition()
       .call((g) =>
         g
           .selectAll('.tick line')
           .attr('stroke-opacity', 0.1)
           .attr('y2', -height + marginTop + marginBottom),
       );
+
+    barSvg.selectAll('.y-axis text').attr('width', `${marginLeft}`).attr('y', 0).call(wrap);
 
     // const rects = barSvg.selectAll('rect').data(data);
 

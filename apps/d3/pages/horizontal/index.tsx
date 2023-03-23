@@ -72,7 +72,7 @@ export default function D3() {
   );
 
   const dimensions = useRef() as { current: Dimensions };
-  dimensions.current = getDimensions(childrenWidth * 1, 400, 20, 10, 30, 50);
+  dimensions.current = getDimensions(childrenWidth * 1, 400, 20, 10, 30, 60);
 
   // console.log('width', width);
   // console.log('dimensions.current', dimensions.current.width);
@@ -85,7 +85,7 @@ export default function D3() {
       20,
       10,
       30,
-      50,
+      60,
     );
   }, [childrenRef, width, height, dimensions]);
 
