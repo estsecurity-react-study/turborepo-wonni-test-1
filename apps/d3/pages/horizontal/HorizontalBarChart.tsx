@@ -69,45 +69,53 @@ const HorizontalBarChart = (props: IDonutChartProps) => {
   //     .selection();
   // };
 
-  const wrap = (text: any) => {
-    text.each(function (_: any, i: number, n: any) {
-      var text = select(n[i]);
-      var words = text.text().split(/\s+/).reverse();
-      var lineHeight = 16;
-      var width = parseFloat(text.attr('width'));
-      var y = parseFloat(text.attr('y'));
-      var x = text.attr('x');
-      var anchor = text.attr('text-anchor');
+  const wrap = useMemo(
+    () => (text: any) => {
+      text.each(function (_: any, i: number, n: any) {
+        let text = select(n[i]);
+        let words = text.text().split(/\s+/).reverse();
+        let lineHeight = 16;
+        let width = parseFloat(text.attr('width'));
+        let y = parseFloat(text.attr('y'));
+        let x = text.attr('x');
+        let anchor = text.attr('text-anchor');
 
-      var tspan = text
-        .text(null)
-        .append('tspan')
-        .attr('x', x)
-        .attr('y', y)
-        .attr('text-anchor', anchor);
-      var lineNumber = 0;
-      var line: string[] = [];
-      var word = words.pop();
+        let tspan = text
+          .text(null)
+          .append('tspan')
+          .attr('x', x)
+          .attr('y', y)
+          .attr('text-anchor', anchor);
+        let lineNumber = 0;
+        let line: string[] = [];
+        let word = words.pop();
 
-      while (word) {
-        line.push(word);
-        tspan.text(line.join(' '));
-        // @ts-ignore
-        if (tspan.node().getComputedTextLength() > width) {
-          lineNumber += 1;
-          line.pop();
+        while (word) {
+          line.push(word);
           tspan.text(line.join(' '));
-          line = [word];
-          tspan = text
-            .append('tspan')
-            .attr('x', x)
-            .attr('y', y + lineNumber * lineHeight)
-            .attr('anchor', anchor)
-            .text(word);
+          // @ts-ignore
+          if (tspan.node().getComputedTextLength() > width) {
+            lineNumber += 1;
+            line.pop();
+            tspan.text(line.join(' '));
+            line = [word];
+            tspan = text
+              .append('tspan')
+              .attr('x', x)
+              .attr('y', y + lineNumber * lineHeight)
+              .attr('anchor', anchor)
+              .text(word);
+          }
+          word = words.pop();
         }
-        word = words.pop();
-      }
-    });
+      });
+    },
+    [data],
+  );
+
+  const mouseover = (event, d) => {
+    const mousePosition = pointer(event);
+    console.log(mousePosition, d);
   };
 
   const memoizedUpdateCallback = useCallback(() => {
@@ -150,22 +158,36 @@ const HorizontalBarChart = (props: IDonutChartProps) => {
           .attr('y2', -height + marginTop + marginBottom),
       );
 
+    barSvg.select('.title').remove();
+
+    barSvg
+      .append('text')
+      .attr('class', 'title')
+      .attr('x', width - marginRight)
+      .attr('y', marginTop)
+      .attr('font-size', '12px')
+      .attr('fill', 'currentColor')
+      .attr('text-anchor', 'end')
+      .text('d3 horizontal bar');
+
     barSvg.selectAll('.y-axis text').attr('width', `${marginLeft}`).attr('y', 0).call(wrap);
 
-    // const rects = barSvg.selectAll('rect').data(data);
+    const rects = barSvg.selectAll('rect').data(data);
 
-    // rects
-    //   .join('rect')
-    //   .attr('class', 'bar')
-    //   .attr('x', marginLeft)
-    //   // @ts-ignore
-    //   .attr('y', (d) => yScale(d.name))
-    //   .attr('height', yScale.bandwidth())
-    //   .transition()
-    //   .duration(500)
-    //   // @ts-ignore
-    //   .attr('width', ({ value }) => xScale(value) - marginLeft)
-    //   .attr('fill', 'orange');
+    rects
+      .join('rect')
+      .attr('class', 'bar')
+      .attr('x', marginLeft)
+      // @ts-ignore
+      .attr('y', (d) => yScale(d.name))
+      .attr('height', yScale.bandwidth())
+      .transition()
+      .duration(500)
+      // @ts-ignore
+      .attr('width', ({ value }) => xScale(value) - marginLeft)
+      .attr('fill', 'orange');
+
+    rects.on('mouseover', mouseover);
 
     // rects.join(
     //   (enter) => {

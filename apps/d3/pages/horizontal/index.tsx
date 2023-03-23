@@ -22,12 +22,12 @@ export type Dimensions = {
 };
 
 const campaign: Data[] = [
-  { name: '운영체제 최신보안 패치', value: 12 },
-  { name: '보안센터 서비스 실행', value: 14 },
-  { name: 'Windows 방화벽 사용', value: 8 },
-  { name: '윈도우 로그인 패스워드', value: 1 },
-  { name: '기타', value: 4 },
-  { name: '바이러스 백신 설치 및 실행', value: 7 },
+  { name: '운영체제 최신보안 패치', value: 52134 },
+  { name: '보안센터 서비스 실행', value: 15457 },
+  { name: 'Windows 방화벽 사용', value: 545 },
+  { name: '윈도우 로그인 패스워드', value: 34567 },
+  { name: '기타', value: 24567 },
+  { name: '바이러스 백신 설치 및 실행', value: 45675 },
 ];
 
 export default function D3() {
@@ -96,7 +96,6 @@ export default function D3() {
   return (
     <div ref={rootRef} className="grid grid-flow-col grid-rows-2 grid-cols-2 gap-8">
       <div ref={childrenRef}>
-        test
         {data.length > 1 ? (
           <>
             <h3>Bar Chart, Horizontal</h3>
