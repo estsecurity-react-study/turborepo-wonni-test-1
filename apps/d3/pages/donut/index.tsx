@@ -31,6 +31,9 @@ const campaign: Data[] = [
   { name: 'Jul 7 2017', value: 34 },
   { name: 'Jul 10 2017', value: 52 },
   { name: 'Jul 15 2017', value: 45 },
+  { name: 'Jul 17 2017', value: 7 },
+  { name: 'Jul 22 2017', value: 51 },
+  { name: 'Jul 25 2017', value: 37 },
 ];
 
 export default function D3() {
@@ -38,7 +41,16 @@ export default function D3() {
   const [propertiesNames] = useState(['name', 'value']);
   const { width, height } = useWindowDimensions();
 
+  const [childrenWidth, setChildrenWidth] = useState<number>(0);
+
   const rootRef = useRef<HTMLDivElement>(null);
+  const childrenRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (childrenRef.current) {
+      setChildrenWidth(childrenRef.current.offsetWidth);
+    }
+  }, [childrenRef, width, height]);
 
   const getDimensions = useMemo(
     () =>
@@ -47,10 +59,10 @@ export default function D3() {
           width,
           height,
           margin: {
-            left,
-            right,
             top,
+            right,
             bottom,
+            left,
           },
           boundedWidth: 0,
           boundedHeight: 0,
@@ -66,32 +78,29 @@ export default function D3() {
   );
 
   const dimensions = useRef() as { current: Dimensions };
-  dimensions.current = getDimensions(width * 1, height * 0.9, 0, 0, 0, 0);
-  0;
+  dimensions.current = getDimensions(childrenWidth * 1, 400, 0, 0, 0, 0);
 
   // resize
   useEffect(() => {
     (dimensions as unknown as { current: Dimensions }).current = getDimensions(
-      width * 1,
-      height * 0.9,
+      childrenWidth * 1,
+      400 * 1,
       0,
       0,
       0,
       0,
     );
-  }, [width, height, dimensions]);
-
-  const loadData = () => {
-    setData(campaign as unknown as Data[]);
-  };
+  }, [childrenRef, width, height, dimensions]);
 
   useEffect(() => {
-    loadData();
+    setData(campaign as unknown as Data[]);
   }, [campaign]);
 
+  console.log(dimensions.current);
+
   return (
-    <div ref={rootRef}>
-      <>
+    <div ref={rootRef} className="grid grid-flow-col grid-rows-2 grid-cols-2 gap-8">
+      <div ref={childrenRef}>
         {data.length > 1 ? (
           <>
             <h3>Donut Pie Chart</h3>
@@ -104,7 +113,10 @@ export default function D3() {
         ) : (
           <>Loading</>
         )}
-      </>
+      </div>
+      <div>3</div>
+      <div>2</div>
+      <div>4</div>
     </div>
   );
 }

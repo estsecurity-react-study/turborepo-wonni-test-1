@@ -1,5 +1,5 @@
 import { useEffect, useCallback, useState, useMemo } from 'react';
-import { select, scaleOrdinal, pie, arc, extent, schemeCategory10, interpolate } from 'd3';
+import { select, scaleOrdinal, pie, arc, extent, schemePaired, interpolate } from 'd3';
 import { Data, Dimensions } from './index';
 
 interface IDonutChartProps {
@@ -23,7 +23,7 @@ const DonutChart = (props: IDonutChartProps) => {
               return d.name;
             }) as unknown as string,
           )
-          .range(schemeCategory10),
+          .range(schemePaired),
       };
     },
     [props.data.length],
@@ -54,8 +54,8 @@ const DonutChart = (props: IDonutChartProps) => {
   const pieGenerator = useMemo(
     () =>
       pie<any>()
-        .value(({ value }) => value)
-        .sort(null),
+        .sort((a, b) => b.value - a.value)
+        .value(({ value }) => value),
     [props.data],
   );
 
@@ -85,6 +85,10 @@ const DonutChart = (props: IDonutChartProps) => {
       .innerRadius(radius * 0.9)
       .outerRadius(radius * 0.9);
 
+    const labelArcs = arc()
+      .innerRadius(0.55 * radius)
+      .outerRadius(0.95 * radius);
+
     // Draw Chart
 
     pieSvg
@@ -100,82 +104,64 @@ const DonutChart = (props: IDonutChartProps) => {
               .attr('fill', (d) => {
                 return scales.color(d.data.name);
               })
+              .style('opacity', 0)
               .transition()
-              .duration(400)
-              .style('opacity', 0.5)
+              .style('opacity', 1)
               .attrTween('d', function (d) {
                 const i = interpolate(d.startAngle, d.endAngle);
                 return function (t) {
                   d.endAngle = i(t);
                   return arcGenerator(d);
                 };
-              }) as any
+              })
+              .selection() as any
           );
         },
         (update) => {
-          return update.transition().duration(400).attr('d', arcGenerator).style('opacity', 0.5);
+          return update.attr('d', arcGenerator).transition().style('opacity', 1).selection();
         },
         (exit) => {
-          return exit.remove();
-        },
-      );
-
-    pieSvg
-      .selectAll('text')
-      .data(pieData)
-      .join(
-        (enter) => {
-          return enter
-            .append('text')
-            .attr('transform', function (d) {
-              return `translate(${arcGenerator.centroid(d)})`;
-            })
-            .attr('text-anchor', 'middle')
-            .attr('font-size', '14px')
-            .attr('fill', 'white')
-            .style('opacity', 0)
-            .transition()
-            .duration(700)
-            .style('opacity', 1)
-            .text((d) => {
-              return `${d.data.value}`;
-            }) as any;
-        },
-        (update) => {
-          return update
-            .transition()
-            .duration(400)
-            .attr('transform', function (d) {
-              return `translate(${arcGenerator.centroid(d)})`;
-            })
-            .style('opacity', 1)
-            .text((d) => {
-              return `${d.data.value}`;
-            }) as any;
-        },
-        (exit) => {
-          return exit.remove();
+          return exit.transition().style('opacity', 0).remove();
         },
       );
 
     // pieSvg
-    //   .selectAll('legend')
+    //   .selectAll('text')
     //   .data(pieData)
-    //   .enter()
-    //   .append('text')
-    //   .attr('transform', function (d) {
-    //     return `translate(${arcGenerator.centroid(d)})`;
-    //   })
-    //   .attr('text-anchor', 'middle')
-    //   .attr('font-size', '14px')
-    //   .attr('fill', 'white')
-    //   .style('opacity', 0)
-    //   .transition()
-    //   .duration(700)
-    //   .style('opacity', 1)
-    //   .text((d) => {
-    //     return `${d.data.value}`;
-    //   });
+    //   .join(
+    //     (enter) => {
+    //       return enter
+    //         .append('text')
+    //         .attr('transform', function (d) {
+    //           return `translate(${arcGenerator.centroid(d)})`;
+    //         })
+    //         .attr('text-anchor', 'middle')
+    //         .attr('font-size', '14px')
+    //         .attr('fill', 'white')
+    //         .style('opacity', 0)
+    //         .transition()
+    //         .duration(700)
+    //         .style('opacity', 1)
+    //         .text((d) => {
+    //           return `${d.data.value}`;
+    //         }) as any;
+    //     },
+    //     (update) => {
+    //       return update
+    //         .attr('transform', function (d) {
+    //           return `translate(${arcGenerator.centroid(d)})`;
+    //         })
+    //         .transition()
+    //         .duration(400)
+    //         .style('opacity', 1)
+    //         .text((d) => {
+    //           return `${d.data.value}`;
+    //         }) as any;
+    //     },
+    //     (exit) => {
+    //       return exit.remove();
+    //     },
+    //   );
 
     // pieSvg
     //   .append('circle')
@@ -189,86 +175,99 @@ const DonutChart = (props: IDonutChartProps) => {
 
     // // Peripherals
 
-    // pieSvg
-    //   .selectAll('allPolylines')
-    //   .data(pieData)
-    //   .enter()
-    //   .append('polyline')
-    //   .attr('fill', 'none')
-    //   .transition()
-    //   .duration(700)
-    //   // @ts-ignore
-    //   .attr('stroke', (d) => {
-    //     return scales.color(d.data.name);
-    //   })
-    //   .attr('stroke-width', 1)
-    //   // @ts-ignore
-    //   .attr('points', (d) => {
-    //     // @ts-ignore
-    //     const posA = arcGenerator.centroid(d);
-    //     // @ts-ignore
-    //     const posB = outerArcForLabelsPosition.centroid(d);
-    //     // @ts-ignore
-    //     const posC = outerArcForLabelsPosition.centroid(d);
-    //     const midangle = d.startAngle + (d.endAngle - d.startAngle) / 2;
-    //     posC[0] = radius * 0.95 * (midangle < Math.PI ? 1 : -1);
-    //     return [posA, posB, posC];
-    //   });
+    pieSvg
+      .selectAll('polyline')
+      .data(pieData)
+      .join(
+        (enter) =>
+          enter
+            .append('polyline')
+            .attr('fill', 'none')
+            // @ts-ignore
+            .attr('stroke', (d) => {
+              return scales.color(d.data.name);
+            })
+            .attr('stroke-width', 1)
+            // @ts-ignore
+            .attr('points', (d) => {
+              // @ts-ignore
+              const posA = labelArcs.centroid(d);
+              // @ts-ignore
+              const posB = outerArcForLabelsPosition.centroid(d);
+              // @ts-ignore
+              const posC = outerArcForLabelsPosition.centroid(d);
+              const midangle = d.startAngle + (d.endAngle - d.startAngle) / 2;
+              // posC[0] = radius * 0.95 * (midangle < Math.PI ? 1 : -1);
+              return [posA, posB, posC];
+            }),
+        (update) =>
+          update
 
-    // pieSvg
-    //   .selectAll('allLabels')
-    //   .data(pieData)
-    //   .enter()
-    //   .append('text')
-    //   // @ts-ignore
-    //   .text((d) => {
-    //     return `${d.data.name}`;
-    //   })
-    //   .attr('transform', (d) => {
-    //     // @ts-ignore
-    //     const pos = outerArcForLabelsPosition.centroid(d);
-    //     const midAngle = d.startAngle + (d.endAngle - d.startAngle) / 2;
-    //     pos[0] = radius * 0.99 * (midAngle < Math.PI ? 1 : -1);
-    //     return `translate(${pos})`;
-    //   })
-    //   .attr('text-anchor', (d) => {
-    //     const midAngle = d.startAngle + (d.endAngle - d.startAngle) / 2;
-    //     return midAngle < Math.PI ? 'start' : 'end';
-    //   })
-    //   // @ts-ignore
-    //   .attr('fill', (d) => {
-    //     return scales.color(d.data.name);
-    //   });
+            // @ts-ignore
+            .attr('points', (d) => {
+              // @ts-ignore
+              const posA = labelArcs.centroid(d);
+              // @ts-ignore
+              const posB = outerArcForLabelsPosition.centroid(d);
+              // @ts-ignore
+              const posC = outerArcForLabelsPosition.centroid(d);
+              const midangle = d.startAngle + (d.endAngle - d.startAngle) / 2;
+              // posC[0] = radius * 0.95 * (midangle < Math.PI ? 1 : -1);
+              return [posA, posB, posC];
+            })
+            .transition()
+            .duration(400),
+        (exit) => {
+          return exit.remove();
+        },
+      );
+
+    pieSvg
+      .selectAll('text')
+      .data(pieData)
+      .join(
+        (enter) =>
+          enter
+            .append('text')
+            .text((d) => {
+              return `${d.data.name}`;
+            })
+            .attr('transform', (d) => {
+              // @ts-ignore
+              const pos = outerArcForLabelsPosition.centroid(d);
+              const midAngle = d.startAngle + (d.endAngle - d.startAngle) / 2;
+              // pos[0] = radius * 0.99 * (midAngle < Math.PI ? 1 : -1);
+              return `translate(${pos})`;
+            })
+            .attr('text-anchor', (d) => {
+              const midAngle = d.startAngle + (d.endAngle - d.startAngle) / 2;
+              return midAngle < Math.PI ? 'start' : 'end';
+            })
+            // @ts-ignore
+            .attr('fill', (d) => {
+              return scales.color(d.data.name);
+            }),
+        (update) =>
+          update
+            // @ts-ignore
+            .attr('transform', (d) => {
+              // @ts-ignore
+              const pos = outerArcForLabelsPosition.centroid(d);
+              const midAngle = d.startAngle + (d.endAngle - d.startAngle) / 2;
+              // pos[0] = radius * 0.99 * (midAngle < Math.PI ? 1 : -1);
+              return `translate(${pos})`;
+            })
+            .attr('text-anchor', (d) => {
+              const midAngle = d.startAngle + (d.endAngle - d.startAngle) / 2;
+              return midAngle < Math.PI ? 'start' : 'end';
+            })
+            .transition()
+            .duration(400),
+        (exit) => {
+          return exit.remove();
+        },
+      );
   }, [props.data, props.dimensions, props.propertiesNames]);
-
-  // useEffect(() => {
-  //   // 데이터만 바뀌는 경우 true
-  //   console.log('===============', loaded, '================');
-  //   if (!loaded) {
-  //     setLoaded(true);
-  //     memoizedDrawCallback();
-  //   } else {
-  //     memoizedUpdateCallback();
-  //   }
-  // }, [loaded, memoizedDrawCallback, memoizedUpdateCallback]);
-
-  // useEffect(() => {
-  //   const isNewHeight = prevHeight !== props.dimensions.height;
-  //   const isNewWidth = prevWidth !== props.dimensions.width;
-  //   if (isNewHeight || isNewWidth) {
-  //     setPrevWidth(props.dimensions.height);
-  //     setPrevHeight(props.dimensions.width);
-  //     memoizedDrawCallback();
-  //     memoizedUpdateCallback();
-  //   }
-  // }, [
-  //   memoizedDrawCallback,
-  //   memoizedUpdateCallback,
-  //   prevHeight,
-  //   prevWidth,
-  //   props.dimensions.height,
-  //   props.dimensions.width,
-  // ]);
 
   useEffect(() => {
     // 데이터만 바뀌는 경우 true
