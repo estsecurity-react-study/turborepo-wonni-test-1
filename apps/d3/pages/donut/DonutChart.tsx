@@ -118,10 +118,10 @@ const DonutChart = (props: IDonutChartProps) => {
           );
         },
         (update) => {
-          return update.attr('d', arcGenerator).transition().style('opacity', 1).selection();
+          return update.attr('d', arcGenerator).transition().attr('opacity', 1).selection();
         },
         (exit) => {
-          return exit.transition().style('opacity', 0).remove();
+          return exit.transition().attr('opacity', 0).remove();
         },
       );
 
