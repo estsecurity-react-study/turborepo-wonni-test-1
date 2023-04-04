@@ -1,11 +1,11 @@
 import { useEffect, useRef, useMemo, useState } from 'react';
 
 import useWindowDimensions from '../WindowDimensions';
-import RadarChart2 from './RadarChart';
+import Bar2 from './Bar2';
 
 export type Data = {
-  name?: string;
-  value?: number;
+  date: string;
+  count: number;
 };
 
 export type Dimensions = {
@@ -22,12 +22,15 @@ export type Dimensions = {
 };
 
 const campaign: Data[] = [
-  { name: '운영체제 최신보안 패치', value: 32 },
-  { name: '보안센터 서비스 실행', value: 23 },
-  { name: 'Windows 방화벽 사용', value: 4 },
-  { name: '윈도우 로그인 패스워드', value: 53 },
-  { name: '바이러스 백신 설치 및 실행', value: 50 },
-  { name: '기타', value: 14 },
+  { date: 'May 5 2017', count: 100 },
+  { date: 'May 7 2017', count: 26 },
+  { date: 'Jun 11 2017', count: 31 },
+  { date: 'Jun 25 2017', count: 36 },
+  { date: 'Jul 2 2017', count: 17 },
+  { date: 'Jul 5 2017', count: 23 },
+  { date: 'Jul 7 2017', count: 41 },
+  { date: 'Jul 10 2017', count: 32 },
+  { date: 'Jul 15 2017', count: 14 },
 ];
 
 export default function D3() {
@@ -72,17 +75,17 @@ export default function D3() {
   );
 
   const dimensions = useRef() as { current: Dimensions };
-  dimensions.current = getDimensions(childrenWidth * 1, 300, 0, 0, 0, 0);
+  dimensions.current = getDimensions(childrenWidth * 1, 600, 30, 30, 30, 30);
 
   // resize
   useEffect(() => {
     (dimensions as unknown as { current: Dimensions }).current = getDimensions(
       childrenWidth * 1,
-      300 * 1,
-      0,
-      0,
-      0,
-      0,
+      600 * 1,
+      30,
+      30,
+      30,
+      30,
     );
   }, [childrenRef, width, height, dimensions]);
 
@@ -95,9 +98,9 @@ export default function D3() {
       <div ref={childrenRef}>
         {data.length > 1 ? (
           <>
-            <h3>Radar Chart</h3>
-            <RadarChart2
-              name="radarChart2"
+            <h3>Bar Chart 2</h3>
+            <Bar2
+              name="Bar2"
               dimensions={dimensions.current}
               data={data}
               propertiesNames={propertiesNames}

@@ -3,13 +3,15 @@ import { scaleLinear, select, max, pointer, line, min } from 'd3';
 import { Data, Dimensions } from './index';
 
 interface IDonutChartProps {
+  name: string;
   dimensions: Dimensions;
   data: Data[];
   propertiesNames: string[];
 }
 
-const RadarChart = (props: IDonutChartProps) => {
+const RadarChart2 = (props: IDonutChartProps) => {
   const {
+    name,
     data,
     dimensions: {
       width,
@@ -33,7 +35,7 @@ const RadarChart = (props: IDonutChartProps) => {
   const memoizedDrawCallback = useCallback(() => {
     // resize가 안 일어나면 여기 안들어옴
     // 데이터만 바뀌는 경우 여기 안들어옴
-    select('#radarChart').selectAll('g').exit().remove();
+    select(name).selectAll('g').exit().remove();
   }, []);
 
   const generatePoint = useMemo(
@@ -132,7 +134,7 @@ const RadarChart = (props: IDonutChartProps) => {
   };
 
   const memoizedUpdateCallback = useCallback(() => {
-    const radar = select('#radarChart');
+    const radar = select(`#${name}`);
 
     const barSvg = radar
       .attr('width', width)
@@ -429,7 +431,7 @@ const RadarChart = (props: IDonutChartProps) => {
 
   return (
     <svg
-      id="radarChart"
+      id={name}
       width={width}
       height={height}
       style={{
@@ -449,4 +451,4 @@ const RadarChart = (props: IDonutChartProps) => {
   );
 };
 
-export default RadarChart;
+export default RadarChart2;

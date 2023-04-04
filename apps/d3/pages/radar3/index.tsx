@@ -2,6 +2,7 @@ import { useEffect, useRef, useMemo, useState } from 'react';
 
 import useWindowDimensions from '../WindowDimensions';
 import RadarChart from './RadarChart';
+import RadarChart2 from '../radar2/RadarChart';
 
 export type Data = {
   name?: string;
@@ -24,7 +25,7 @@ export type Dimensions = {
 const campaign: Data[] = [
   { name: '운영체제 최신보안 패치', value: 32 },
   { name: '보안센터 서비스 실행', value: 100 },
-  { name: 'Windows 방화벽 사용', value: 4 },
+  { name: 'Windows 방화벽 사용', value: 20 },
   { name: '윈도우 로그인 패스워드', value: 53 },
   { name: '바이러스 백신 설치 및 실행', value: 50 },
   { name: '기타', value: 14 },
@@ -72,13 +73,13 @@ export default function D3() {
   );
 
   const dimensions = useRef() as { current: Dimensions };
-  dimensions.current = getDimensions(childrenWidth * 1, 600, 0, 0, 0, 0);
+  dimensions.current = getDimensions(childrenWidth * 1, 300, 0, 0, 0, 0);
 
   // resize
   useEffect(() => {
     (dimensions as unknown as { current: Dimensions }).current = getDimensions(
       childrenWidth * 1,
-      600 * 1,
+      300 * 1,
       0,
       0,
       0,
@@ -97,6 +98,7 @@ export default function D3() {
           <>
             <h3>Radar Chart3</h3>
             <RadarChart
+              name="radarChart3-1"
               dimensions={dimensions.current}
               data={data}
               propertiesNames={propertiesNames}
@@ -107,7 +109,21 @@ export default function D3() {
         )}
       </div>
       <div>3</div>
-      <div>2</div>
+      <div>
+        {data.length > 1 ? (
+          <>
+            <h3>Radar Chart2</h3>
+            <RadarChart2
+              name="radarChart2"
+              dimensions={dimensions.current}
+              data={data}
+              propertiesNames={propertiesNames}
+            />
+          </>
+        ) : (
+          <>Loading</>
+        )}
+      </div>
       <div>4</div>
     </div>
   );

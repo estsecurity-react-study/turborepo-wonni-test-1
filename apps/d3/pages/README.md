@@ -369,6 +369,14 @@ function BarChart() {
 - [ ] [The General Update Pattern of D3.js](https://www.youtube.com/watch?v=IyIAR65G-GQ)
 - [ ] [Curran Kelleher](https://www.youtube.com/@currankelleher/videos)
 - [x] [general-update-pattern](https://observablehq.com/@d3/general-update-pattern)
+- [x] [Input data transition for d3.js line chart](https://d3-graph-gallery.com/graph/line_change_data.html)
+- [x] [d3-historical-prices-data-joins join 사용법 참고 예제](https://github.com/wentjun/d3-historical-prices-data-joins/blob/master/docs/chart.js)
+- [x] [변하는 챠트 예제](https://pyarasid.github.io/D3.js-Animate_MultipleCharts_Button/)
+- [ ] [D3 with React](https://ncoughlin.com/posts/d3-react/)
+- [ ] [Using D3.js with React.js: An 8-step comprehensive manual](https://blog.griddynamics.com/using-d3-js-with-react-js-an-8-step-comprehensive-manual/)
+
+## D3
+- [x] [d3-scaleband](https://observablehq.com/@d3/d3-scaleband)
 
 ## MAP
 

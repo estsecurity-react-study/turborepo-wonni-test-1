@@ -1,8 +1,9 @@
 import { useEffect, useCallback, useState, useMemo } from 'react';
-import { scaleLinear, select, max, pointer, line, min } from 'd3';
+import { scaleLinear, select, max, pointer, line, transition, easeLinear } from 'd3';
 import { Data, Dimensions } from './index';
 
 interface IDonutChartProps {
+  name: string;
   dimensions: Dimensions;
   data: Data[];
   propertiesNames: string[];
@@ -10,6 +11,7 @@ interface IDonutChartProps {
 
 const RadarChart = (props: IDonutChartProps) => {
   const {
+    name,
     data,
     dimensions: {
       width,
@@ -30,10 +32,14 @@ const RadarChart = (props: IDonutChartProps) => {
   const step = maxValue / NUM_OF_LEVEL;
   const scale = scaleLinear().domain([0, maxValue]).range([0, r]).nice();
 
+  function t() {
+    return transition().duration(1000).ease(easeLinear);
+  }
+
   const memoizedDrawCallback = useCallback(() => {
     // resize가 안 일어나면 여기 안들어옴
     // 데이터만 바뀌는 경우 여기 안들어옴
-    select('#radarChart').selectAll('g').exit().remove();
+    select(name).selectAll('g').exit().remove();
   }, []);
 
   const generatePoint = useMemo(
@@ -111,11 +117,11 @@ const RadarChart = (props: IDonutChartProps) => {
     [data, dataLength, scale],
   );
 
-  const linePointPosition = (d: any, i: number, c: number) => {
+  const linePointPosition = (d: any, i: number) => {
     const len = scale(d.value as number);
     const theta = i * ((2 * Math.PI) / dataLength);
-    const point = generatePoint({ length: len, angle: theta });
-    return point[c];
+    const p = generatePoint({ length: len, angle: theta });
+    return `translate(${p[0]},${p[1]})`;
   };
 
   const pointLabels = (i: number, c: number) => {
@@ -132,7 +138,7 @@ const RadarChart = (props: IDonutChartProps) => {
   };
 
   const memoizedUpdateCallback = useCallback(() => {
-    const radar = select('#radarChart');
+    const radar = select(`#${name}`);
 
     const barSvg = radar
       .attr('width', width)
@@ -154,21 +160,26 @@ const RadarChart = (props: IDonutChartProps) => {
           .attr('stroke', '#ddd')
           .style('opacity', 0)
           .attr('stroke-width', '0px')
-          .transition()
+          .transition(t)
           .style('opacity', 1)
           .attr('stroke-width', '1px')
           .selection();
       },
       (update) => {
         return update
+          .transition(t)
           .attr('d', lineGroup)
-          .transition()
           .style('opacity', 1)
           .attr('stroke-width', '1px')
           .selection();
       },
       (exit) => {
-        return exit.transition().style('opacity', 0).attr('stroke-width', '0').remove();
+        return exit
+          .transition(t)
+          .attr('d', lineGroup)
+          .style('opacity', 0)
+          .attr('stroke-width', '0')
+          .remove();
       },
     );
 
@@ -183,29 +194,25 @@ const RadarChart = (props: IDonutChartProps) => {
           .style('opacity', 0)
           .attr('stroke', '#ddd')
           .attr('stroke-width', '0px')
-          .transition()
+          .transition(t)
           .style('opacity', 1)
           .attr('stroke-width', '1px')
           .selection();
       },
       (update) => {
         return update
+          .transition(t)
           .attr('d', gridGroup)
-          .transition()
           .style('opacity', 1)
           .attr('stroke-width', '1px')
           .selection();
       },
       (exit) => {
-        return exit.transition().style('opacity', 0).attr('stroke-width', '0px').remove();
+        return exit.transition(t).style('opacity', 0).attr('stroke-width', '0px').remove();
       },
     );
 
-    const tickLines = barSvg
-      .select('.ticks-lines')
-      .selectAll('path')
-      .data(Array.from(Array(1).keys()));
-
+    const tickLines = barSvg.select('.ticks-lines').selectAll('path').data([null]);
     tickLines.join(
       (enter) => {
         return enter
@@ -214,16 +221,16 @@ const RadarChart = (props: IDonutChartProps) => {
           .attr('d', tickLine)
           .attr('fill', 'none')
           .style('opacity', '0')
-          .transition()
+          .transition(t)
           .attr('stroke', 'rgb(244, 117, 96)')
           .style('opacity', '1')
           .selection();
       },
       (update) => {
-        return update.attr('d', tickLine).transition().style('opacity', '1').selection();
+        return update.attr('d', tickLine).transition(t).style('opacity', '1').selection();
       },
       (exit) => {
-        return exit.transition().style('opacity', 0).remove();
+        return exit.transition(t).style('opacity', 0).remove();
       },
     );
 
@@ -238,7 +245,7 @@ const RadarChart = (props: IDonutChartProps) => {
           .append('path')
           .attr('class', 'tick')
           .style('opacity', 0)
-          .transition()
+          .transition(t)
           .attr('d', tick)
           .attr('fill', 'none')
           .style('opacity', '1')
@@ -246,10 +253,10 @@ const RadarChart = (props: IDonutChartProps) => {
           .selection();
       },
       (update) => {
-        return update.attr('d', tick).transition().style('opacity', 1).selection();
+        return update.attr('d', tick).transition(t).style('opacity', 1).selection();
       },
       (exit) => {
-        return exit.transition().style('opacity', 0).remove();
+        return exit.transition(t).style('opacity', 0).remove();
       },
     );
 
@@ -266,9 +273,9 @@ const RadarChart = (props: IDonutChartProps) => {
           .attr('x', (_, i) => tickLabelPosition(i, 0))
           .attr('y', (_, i) => tickLabelPosition(i, 1))
           .style('opacity', 0)
-          .transition()
+          .transition(t)
           .style('opacity', 1)
-          .attr('fill', 'rgb(51, 51, 51)')
+          .attr('fill', 'rgb(133, 154, 168)')
           .attr('text-anchor', 'end')
           .attr('font-size', '11px')
           .text(tickLabels as unknown as string)
@@ -279,20 +286,17 @@ const RadarChart = (props: IDonutChartProps) => {
           .attr('x', (_, i) => tickLabelPosition(i, 0))
           .attr('y', (_, i) => tickLabelPosition(i, 1))
           .style('opacity', 0)
-          .transition()
+          .transition(t)
           .style('opacity', 1)
           .text(tickLabels as unknown as string)
           .selection();
       },
       (exit) => {
-        return exit.transition().remove();
+        return exit.transition(t).remove();
       },
     );
 
-    const tickShape = barSvg
-      .select('.shape')
-      .selectAll('path')
-      .data(Array.from(Array(1).keys()));
+    const tickShape = barSvg.select('.shape').selectAll('path').data([null]);
 
     tickShape.join(
       (enter) => {
@@ -304,55 +308,55 @@ const RadarChart = (props: IDonutChartProps) => {
           .style('fill', 'rgba(232, 193, 160, 0)')
           .attr('stroke-width', 2)
           .style('fill-opacity', 0)
-          .transition()
+          .transition(t)
           .style('stroke', 'rgba(232, 193, 160, 1)')
           .style('fill', 'rgba(232, 193, 160,1)')
           .style('fill-opacity', 0.25)
           .selection();
       },
       (update) => {
-        return update.attr('d', shapeDraw).transition().style('fill-opacity', 0.25).selection();
+        return update.transition(t).attr('d', shapeDraw).style('fill-opacity', 0.25).selection();
       },
       (exit) => {
-        return exit.transition().style('fill-opacity', 0).remove();
+        return exit.transition(t).style('fill-opacity', 0).remove();
       },
     );
 
-    const linePoint = barSvg.select('.indic').selectAll('circle').data(data);
-    linePoint.join(
-      (enter) => {
-        return enter
-          .append('circle')
-          .attr('class', 'circle')
-          .attr('cx', (d, i) => linePointPosition(d, i, 0))
-          .attr('cy', (d, i) => linePointPosition(d, i, 1))
-          .attr('fill', 'white')
-          .style('opacity', 0)
-          .style('stroke-width', 2)
-          .attr('r', 5)
-          .style('stroke', 'rgba(232, 193, 160,0)')
-          .transition()
-          .style('opacity', 1)
-          .style('stroke', 'rgba(232, 193, 160,1)')
-          .selection();
-      },
-      (update) => {
-        return update
-          .attr('cx', (d, i) => linePointPosition(d, i, 0))
-          .attr('cy', (d, i) => linePointPosition(d, i, 1))
-          .transition()
-          .style('opacity', 1)
-          .selection();
-      },
-      (exit) => {
-        return exit
-          .attr('cx', (d, i) => linePointPosition(d, i, 0))
-          .attr('cy', (d, i) => linePointPosition(d, i, 1))
-          .transition()
-          .style('opacity', 0)
-          .remove();
-      },
-    );
+    const groups = barSvg.select('.indic').selectAll('g').data(data);
+
+    const groupsEnter = groups.enter().append('g');
+
+    groupsEnter
+      .style('opacity', 0)
+      .attr('transform', (d, i) => linePointPosition(d, i))
+      //@ts-ignore
+      .merge(groups)
+      .transition(t)
+      .style('opacity', 1)
+      .attr('transform', (d, i) => linePointPosition(d, i));
+
+    groups.exit().transition(t).style('opacity', 0).remove();
+
+    groupsEnter
+      .append('circle')
+      .merge(groups.select('circle'))
+      .attr('r', 5)
+      .attr('fill', 'white')
+      .style('stroke', 'rgb(244, 117, 96)')
+      .style('stroke-width', 2);
+
+    groupsEnter
+      .append('text')
+      .merge(groups.select('text'))
+      .attr('y', -12)
+      .attr('text-anchor', 'middle')
+      .attr('font-size', '12px')
+      .attr('stroke-width', '3px')
+      .attr('stroke', 'white')
+      .attr('paint-order', 'stroke')
+      .attr('stroke-linecap', 'butt')
+      .attr('stroke-linejoin', 'miter')
+      .text(({ value }) => value!);
 
     const labels = barSvg.select('.labels').selectAll('text').data(data);
     labels.join(
@@ -367,9 +371,9 @@ const RadarChart = (props: IDonutChartProps) => {
             .text((d) => d.name)
             .attr('x', (_, i) => pointLabels(i, 0))
             .attr('y', (_, i) => pointLabels(i, 1))
-            .attr('fill', 'rgb(106, 124, 137)')
+            .attr('fill', 'rgb(73, 85, 93)')
             .style('opacity', 0)
-            .transition()
+            .transition(t)
             .style('opacity', 1)
             .selection()
         );
@@ -377,11 +381,11 @@ const RadarChart = (props: IDonutChartProps) => {
       (update) => {
         return (
           update
-            .style('opacity', 0)
+            // .style('opacity', 0)
             //@ts-ignore
             .text((d) => d.name)
             .attr('text-anchor', labelPosion)
-            .transition()
+            .transition(t)
             .style('opacity', 1)
             .attr('x', (_, i) => pointLabels(i, 0))
             .attr('y', (_, i) => pointLabels(i, 1))
@@ -393,7 +397,7 @@ const RadarChart = (props: IDonutChartProps) => {
           exit
             //@ts-ignore
             .text((d) => d.name)
-            .transition()
+            .transition(t)
             .attr('text-anchor', labelPosion)
             .attr('x', (_, i) => pointLabels(i, 0))
             .attr('y', (_, i) => pointLabels(i, 1))
@@ -429,7 +433,7 @@ const RadarChart = (props: IDonutChartProps) => {
 
   return (
     <svg
-      id="radarChart"
+      id={name}
       width={width}
       height={height}
       style={{
@@ -437,7 +441,6 @@ const RadarChart = (props: IDonutChartProps) => {
         background: 'white',
       }}
     >
-      <g className="levels" />
       <g className="levels" />
       <g className="grid-lines" />
       <g className="ticks-lines" />

@@ -233,10 +233,10 @@ const HorizontalBarChart = (props: IDonutChartProps) => {
     // 데이터만 바뀌는 경우 true
     if (!loaded) {
       setLoaded(true);
-      console.log('여기');
+      // console.log('여기');
       memoizedDrawCallback();
     } else {
-      console.log('저기');
+      // console.log('저기');
       memoizedUpdateCallback();
     }
   }, [loaded, memoizedDrawCallback, memoizedUpdateCallback]);

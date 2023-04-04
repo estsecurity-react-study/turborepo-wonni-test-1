@@ -121,7 +121,7 @@ const DonutChart = (props: IDonutChartProps) => {
           return update.attr('d', arcGenerator).transition().attr('opacity', 1).selection();
         },
         (exit) => {
-          return exit.transition().attr('opacity', 0).remove();
+          return exit.transition().style('opacity', 0).remove();
         },
       );
 
