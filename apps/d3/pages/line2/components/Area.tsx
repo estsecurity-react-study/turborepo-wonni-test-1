@@ -1,8 +1,8 @@
 import { area, easeBackIn, select } from 'd3';
 import { useEffect, useMemo, useRef } from 'react';
 
-const Area = ({ xScale, yScale, color, data, disableAnimation, ...props }) => {
-  const ref = useRef(null);
+const Area = ({ xScale, yScale, color, data, disableAnimation, ...props }: any) => {
+  const ref = useRef<SVGSVGElement | null>(null);
   useEffect(() => {
     if (disableAnimation) {
       select(ref.current).attr('opacity', 1);

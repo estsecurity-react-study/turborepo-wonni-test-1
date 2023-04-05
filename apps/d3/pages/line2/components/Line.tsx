@@ -1,13 +1,11 @@
 import { easeLinear, select, line } from 'd3';
 import { useCallback, useEffect, useRef } from 'react';
 
-const Line = ({ xScale, yScale, color, data, isSmooth, animation = 'left', ...props }) => {
-  const ref = useRef(null);
-
-  console.log('animation', animation);
+const Line = ({ xScale, yScale, color, data, isSmooth, animation = 'left', ...props }: any) => {
+  const ref = useRef<SVGGeometryElement | null>(null);
 
   const animateLeft = useCallback(() => {
-    console.log('animateLeft');
+    if (!ref.current) return;
     const totalLength = ref.current.getTotalLength();
     select(ref.current)
       .attr('opacity', 1)
@@ -47,7 +45,7 @@ const Line = ({ xScale, yScale, color, data, isSmooth, animation = 'left', ...pr
   // Recalculate line length if scale has changed
   useEffect(() => {
     if (animation === 'left') {
-      const totalLength = ref.current.getTotalLength();
+      const totalLength = ref.current?.getTotalLength();
       select(ref.current).attr('stroke-dasharray', `${totalLength},${totalLength}`);
     }
   }, [xScale, yScale, animation]);

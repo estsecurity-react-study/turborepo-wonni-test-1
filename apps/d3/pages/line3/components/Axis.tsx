@@ -1,4 +1,4 @@
-import { axisBottom, axisLeft, axisRight, bisector, easeLinear, pointer, select } from 'd3';
+import { axisBottom, axisRight, bisector, easeLinear, pointer, select } from 'd3';
 import { useEffect, useRef } from 'react';
 
 const Axis = ({
@@ -10,12 +10,12 @@ const Axis = ({
   disableAnimation,
   anchorEl,
   ...props
-}) => {
-  const ref = useRef(null);
+}: any) => {
+  const ref = useRef<SVGSVGElement | null>(null);
   useEffect(() => {
     const axisGenerator = type === 'left' ? axisRight : axisBottom;
     const axis = axisGenerator(scale).ticks(ticks).tickFormat(tickFormat);
-    const axisGroup = select(ref.current);
+    const axisGroup = select(ref.current) as any;
     if (disableAnimation) {
       axisGroup.call(axis);
     } else {
@@ -41,13 +41,14 @@ const Axis = ({
         const textElements = select(ref.current).selectAll('text');
         const data = textElements.data();
         const index = bisector((d) => d).left(data, xDate);
+        // console.log(index);
         textElements
-          .attr('opacity', (d, i) => (i === index - 1 ? 1 : 0.5))
-          .style('font-weight', (d, i) => (i === index - 1 ? 'bold' : 'normal'));
+          .attr('opacity', (_, i) => (i === index - 1 ? 1 : 0.5))
+          .style('font-weight', (_, i) => (i === index - 1 ? 'bold' : 'normal'));
       });
   }, [anchorEl, scale]);
 
-  return <g ref={ref} transform={transform} {...props} />;
+  return <g ref={ref} className="axisText" transform={transform} {...props} />;
 };
 
 export default Axis;

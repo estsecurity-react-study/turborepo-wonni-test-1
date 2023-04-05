@@ -62,7 +62,6 @@ export default function D3() {
     ...[schcData, vcitData].filter((d) => selectedItems.includes(d.name)),
   ];
   const onChangeSelection = (name: 'SCHC' | 'VCIT') => {
-    console.log(name);
     const newSelectedItems = selectedItems.includes(name)
       ? selectedItems.filter((item) => item !== name)
       : [...selectedItems, name];

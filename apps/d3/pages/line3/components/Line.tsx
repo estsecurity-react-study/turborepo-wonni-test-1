@@ -9,15 +9,16 @@ const Line = ({
   isSmooth,
   animation = 'left',
   ...props
-}) => {
-  const ref = useRef(null);
+}: any) => {
+  const ref = useRef<SVGGeometryElement | null>(null);
 
   const animateLeft = useCallback(() => {
-    const totalLength = ref.current.getTotalLength();
+    const totalLength = ref.current?.getTotalLength();
+
     select(ref.current)
       .attr('opacity', 1)
-      .attr('stroke-dasharray', `${totalLength},${totalLength}`)
-      .attr('stroke-dashoffset', totalLength)
+      .attr('stroke-dasharray', `${totalLength}, ${totalLength}`)
+      .attr('stroke-dashoffset', totalLength!)
       .transition()
       .duration(750)
       .ease(easeLinear)
@@ -50,28 +51,20 @@ const Line = ({
   // Recalculate line length if scale has changed
   useEffect(() => {
     if (animation === 'left') {
-      const totalLength = ref.current.getTotalLength();
+      const totalLength = ref.current?.getTotalLength();
       select(ref.current).attr('stroke-dasharray', `${totalLength},${totalLength}`);
     }
   }, [xScale, yScale, animation]);
 
   const gLine = line()
+    // @ts-ignore
     .x((d) => xScale(d.date))
+    // @ts-ignore
     .y((d) => yScale(d.value));
 
   const d = gLine(data);
 
-  return (
-    <path
-      ref={ref}
-      d={d?.match(/NaN|undefined/) ? '' : d}
-      stroke={color}
-      strokeWidth={3}
-      fill="none"
-      opacity={0}
-      {...props}
-    />
-  );
+  return <path ref={ref} d={d} stroke={color} strokeWidth={3} fill="none" opacity={0} {...props} />;
 };
 
 export default Line;

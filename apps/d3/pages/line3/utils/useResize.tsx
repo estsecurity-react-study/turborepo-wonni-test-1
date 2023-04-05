@@ -1,17 +1,18 @@
 import React, { useEffect } from 'react';
 import ResizeObserver from 'resize-observer-polyfill';
 
-const useResize = (ref) => {
+const useResize = (ref: HTMLDivElement | null) => {
   const [dimensions, setDimensions] = React.useState(null);
   useEffect(() => {
     const element = ref.current;
+
     const resizeObserver = new ResizeObserver((entries) => {
       entries.forEach((entry) => {
-        setDimensions(entry.contentRect);
+        return setDimensions(entry.contentRect);
       });
     });
     if (element) {
-      resizeObserver.observe(element); // CRASHES HERE
+      resizeObserver.observe(element);
     }
 
     return () => {

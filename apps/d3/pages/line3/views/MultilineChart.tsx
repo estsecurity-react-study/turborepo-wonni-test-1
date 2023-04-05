@@ -3,12 +3,11 @@ import useController from './MultilineChart.controller';
 import useDimensions from '../utils/useDimensions';
 import { useRef } from 'react';
 import { margin } from '../../bar/data';
+import { DataProps, Dimensions } from '..';
 
-const MultilineChart = ({ data, dimensions }: any) => {
-  const overlayRef = useRef<HTMLDivElement>(null);
-  const {
-    margin: { top, left, right, bottom },
-  } = dimensions;
+const MultilineChart = ({ data, dimensions }: { data: DataProps[]; dimensions: Dimensions }) => {
+  const overlayRef = useRef<SVGSVGElement | null>(null);
+  const { margin } = dimensions;
 
   const [containerRef, { svgWidth, svgHeight, width, height }]: any = useDimensions({
     maxHeight: 400,
@@ -29,8 +28,16 @@ const MultilineChart = ({ data, dimensions }: any) => {
             ticks={5}
             size={height}
             transform={`translate(0, ${height})`}
+            disableAnimation={undefined}
           />
-          <GridLine type="horizontal" scale={yScaleForAxis} ticks={2} size={width} />
+          <GridLine
+            type="horizontal"
+            scale={yScaleForAxis}
+            ticks={2}
+            size={width}
+            transform={undefined}
+            disableAnimation={undefined}
+          />
           <GridLine
             type="horizontal"
             className="baseGridLine"
@@ -38,17 +45,27 @@ const MultilineChart = ({ data, dimensions }: any) => {
             ticks={1}
             size={width}
             disableAnimation
+            transform={undefined}
           />
           {data.map(({ name, items = [], color }) => (
-            <Line key={name} data={items} xScale={xScale} yScale={yScale} color={color} />
+            <Line
+              key={name}
+              data={items}
+              xScale={xScale}
+              yScale={yScale}
+              color={color}
+              isSmooth={undefined}
+            />
           ))}
-          <Area data={data[0].items} xScale={xScale} yScale={yScale} />
+          <Area data={data[0].items} xScale={xScale} yScale={yScale} disableAnimation={undefined} />
           <Axis
             type="left"
             scale={yScaleForAxis}
             transform="translate(0, -10)"
             ticks={5}
             tickFormat={yTickFormat}
+            disableAnimation={undefined}
+            anchorEl={undefined}
           />
           <Overlay ref={overlayRef} width={width} height={height}>
             <Axis
@@ -59,6 +76,7 @@ const MultilineChart = ({ data, dimensions }: any) => {
               transform={`translate(10, ${height - height / 6})`}
               ticks={5}
               tickFormat={xTickFormat}
+              disableAnimation={undefined}
             />
             <Tooltip
               className="tooltip"
