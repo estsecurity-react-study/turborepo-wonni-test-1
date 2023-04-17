@@ -144,3 +144,10 @@ eact 컴포넌트를 사용하면서 얻게되는 구조와 가독성을 선호�
 ### 장점
 - 좋은 독립적 차트 구조
 - 적절한 곳(애니메이션)에 D3를 직접적으로 사용할 수 있음
+
+## 참고
+- [React + D3.js (1) D3 소개와 React와 접목](https://darrengwon.tistory.com/1140)
+- [React에서 D3.js 사용하는 방법](http://52.78.22.201/tutorials/weplanet/how-to-use-d3/)
+- [How to use D3.js in React](https://cmichel.io/how-to-use-d3js-in-react)
+- [DOM 속도 비교](https://gist.github.com/JMStewart/f0dc27409658ab04d1c8)
+- [Bubble Chart on GitHub](https://github.com/MrToph/react-d3-bubblechart)]
