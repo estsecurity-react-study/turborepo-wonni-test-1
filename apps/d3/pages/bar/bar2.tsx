@@ -10,6 +10,7 @@ import {
   scaleOrdinal,
   schemePaired,
   transition,
+  axisTop,
 } from 'd3';
 import { useResize } from '../useResize';
 import { campaign, margin } from './data';
@@ -30,62 +31,54 @@ export default function D3() {
     [campaign, size, margin],
   );
 
-  const yScale = useMemo(
-    () =>
-      scaleLinear<number>()
-        .domain([0, Number(max(campaign, (d) => d.count)) + 10])
-        .range([height - margin.bottom, margin.top]),
-
-    [campaign, margin, height],
+  const svg = useMemo(
+    () => select(svgRef.current).attr('width', size.width).attr('height', height),
+    [size, height],
   );
 
-  const xAxis = axisBottom(xScale) as any;
-
-  const yAxis = (axisLeft(yScale) as any).ticks(campaign.length).tickSizeInner(0).tickSizeOuter(0);
-
-  const colorScale = scaleOrdinal(schemePaired);
-
-  const createBarChart = useCallback(
-    (width: number, height: number) => {
-      const svg = select(svgRef.current).attr('width', width).attr('height', height);
-
-      const container = svg
-        .append('g')
-        .classed('container', true)
-        .attr('transform', `translate(${margin.top}, ${margin.left})`);
-
-      const labelsGroup = container.append('g').classed('bar-labels', true);
-
-      const xAxisGroup = container
-        .append('g')
-        .classed('axis', true)
-        .style('transform', `translateY(${height}px)`);
-
-      const barsGroup = container.append('g').classed('bars', true);
-    },
-    [campaign, size, margin],
-  );
+  const xAxis = useMemo(() => axisBottom(xScale) as any, [xScale]);
 
   useEffect(() => {
-    if (!size || !campaign) {
-      return;
-    }
-    const { width } = size;
+    const container = svg
+      .selectAll('g')
+      .data([null])
+      .join('g')
+      .attr('id', 'group')
+      .attr('transform', `translate(${margin.top}, ${margin.left})`);
 
-    createBarChart(width, height);
-    return () => {
-      createBarChart(width, height);
-    };
-  }, [campaign, size]);
+    // container
+    //   .selectAll('rect')
+    //   .data(campaign, (d) => {
+    //     return d.count;
+    //   })
+    //   .join(
+    //     function (enter) {
+    //       return enter.append('rect');
+    //     },
+    //     function (update) {
+    //       return update;
+    //     },
+    //     function (exit) {
+    //       return exit.remove();
+    //     },
+    //   );
+
+    container
+      .attr('transform', `translate(0, ${height - margin.bottom})`)
+      .transition()
+      .duration(1000)
+      .call(xAxis);
+    // .call((g) =>
+    //   g
+    //     .selectAll('.tick line')
+    //     .attr('stroke-opacity', 0.1)
+    //     .attr('y2', -height + margin.top + margin.bottom),
+    // );
+  }, [size, margin, xAxis, svg]);
 
   return (
     <div ref={rootRef}>
-      <svg
-        ref={svgRef}
-        width={size.width}
-        height={height}
-        style={{ overflow: 'visible', background: 'yellow' }}
-      ></svg>
+      <svg ref={svgRef} style={{ overflow: 'visible', background: 'yellow' }}></svg>
     </div>
   );
 }

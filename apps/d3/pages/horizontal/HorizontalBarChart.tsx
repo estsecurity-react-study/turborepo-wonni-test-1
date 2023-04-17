@@ -204,28 +204,28 @@ const HorizontalBarChart = (props: IDonutChartProps) => {
     //         .attr('height', yScale.bandwidth())
     //     );
     //   },
-    // (update) => {
-    //   return (
-    //     update
+    //   (update) => {
+    //     return (
+    //       update
+    //         .transition()
+    //         // @ts-ignore
+    //         .attr('x', (d) => xScale(d.name) || null)
+    //         // @ts-ignore
+    //         .attr('height', (d) => yScale(0) - yScale(d.value))
+    //         // @ts-ignore
+    //         .attr('y', (d) => yScale(d.value))
+    //         .attr('width', xScale.bandwidth())
+    //         .attr('fill', 'orange')
+    //         .selection()
+    //     );
+    //   },
+    //   (exit) => {
+    //     return exit
     //       .transition()
-    //       // @ts-ignore
-    //       .attr('x', (d) => xScale(d.name) || null)
-    //       // @ts-ignore
-    //       .attr('height', (d) => yScale(0) - yScale(d.value))
-    //       // @ts-ignore
-    //       .attr('y', (d) => yScale(d.value))
-    //       .attr('width', xScale.bandwidth())
-    //       .attr('fill', 'orange')
-    //       .selection()
-    //   );
-    // },
-    // (exit) => {
-    //   return exit
-    //     .transition()
-    //     .attr('height', 0)
-    //     .attr('y', height - marginBottom)
-    //     .remove();
-    // },
+    //       .attr('height', 0)
+    //       .attr('y', height - marginBottom)
+    //       .remove();
+    //   },
     // );
   }, [data, width, height, marginTop, marginRight, marginBottom, marginLeft]);
 
@@ -233,10 +233,10 @@ const HorizontalBarChart = (props: IDonutChartProps) => {
     // 데이터만 바뀌는 경우 true
     if (!loaded) {
       setLoaded(true);
-      // console.log('여기');
+      console.log('여기');
       memoizedDrawCallback();
     } else {
-      // console.log('저기');
+      console.log('저기', '리사이즈');
       memoizedUpdateCallback();
     }
   }, [loaded, memoizedDrawCallback, memoizedUpdateCallback]);

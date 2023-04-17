@@ -100,7 +100,6 @@ export default function D3() {
       .attr('height', 0)
       .attr('y', height - (margin.top + margin.bottom))
       .transition()
-      .delay(400)
       .duration(300)
       .attr('height', (d) => height - (margin.top + margin.bottom) - yScale(d.count))
       .attr('y', (d) => yScale(d.count))
